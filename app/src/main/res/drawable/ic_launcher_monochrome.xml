@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="512"
+    android:viewportHeight="512">
+
+    <!-- Background -->
+    <path
+        android:fillColor="#000000"
+        android:pathData="M0,0h512v512h-512z"/>
+
+    <!-- Rect 1 (Circle: x=18, y=246, w=20, h=20, rx=10, ry=10) -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M28,246 A10,10 0 1,1 28,266 A10,10 0 1,1 28,246 Z"/>
+
+    <!-- Rect 2 (x=56, y=236, w=20, h=40, rx=10, ry=10) -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="
+            M66,236
+            A10,10 0 0 1 76,246
+            L76,266
+            A10,10 0 0 1 66,276
+            A10,10 0 0 1 56,266
+            L56,246
+            A10,10 0 0 1 66,236
+            Z"/>
+
+    <!-- Rect 3 (x=94, y=226, w=20, h=60, rx=10, ry=10) -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="
+            M104,226
+            A10,10 0 0 1 114,236
+            L114,276
+            A10,10 0 0 1 104,286
+            A10,10 0 0 1 94,276
+            L94,236
+            A10,10 0 0 1 104,226
+            Z"/>
+
+    <!-- Rect 4 (x=132, y=190, w=20, h=132, rx=10, ry=10) -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="
+            M142,190
+            A10,10 0 0 1 152,200
+            L152,312
+            A10,10 0 0 1 142,322
+            A10,10 0 0 1 132,312
+            L132,200
+            A10,10 0 0 1 142,190
+            Z"/>
+
+    <!-- Rect 5 (x=170, y=165, w=20, h=182, rx=10, ry=10) -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="
+            M180,165
+            A10,10 0 0 1 190,175
+            L190,337
+            A10,10 0 0 1 180,347
+            A10,10 0 0 1 170,337
+            L170,175
+            A10,10 0 0 1 180,165
+            Z"/>
+
+    <!-- Rect 6 (x=208, y=206, w=20, h=100, rx=10, ry=10) -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="
+            M218,206
+            A10,10 0 0 1 228,216
+            L228,296
+            A10,10 0 0 1 218,306
+            A10,10 0 0 1 208,296
+            L208,216
+            A10,10 0 0 1 218,206
+            Z"/>
+
+    <!-- Rect 7 (x=246, y=146, w=20, h=220, rx=10, ry=10) -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="
+            M256,146
+            A10,10 0 0 1 266,156
+            L266,356
+            A10,10 0 0 1 256,366
+            A10,10 0 0 1 246,356
+            L246,156
+            A10,10 0 0 1 256,146
+            Z"/>
+
+    <!-- Rect 8 (x=284, y=206, w=20, h=100, rx=10, ry=10) -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="
+            M294,206
+            A10,10 0 0 1 304,216
+            L304,296
+            A10,10 0 0 1 294,306
+            A10,10 0 0 1 284,296
+            L284,216
+            A10,10 0 0 1 294,206
+            Z"/>
+
+    <!-- Rect 9 (x=322, y=165, w=20, h=182, rx=10, ry=10) -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="
+            M332,165
+            A10,10 0 0 1 342,175
+            L342,337
+            A10,10 0 0 1 332,347
+            A10,10 0 0 1 322,337
+            L322,175
+            A10,10 0 0 1 332,165
+            Z"/>
+
+    <!-- Rect 10 (x=360, y=190, w=20, h=132, rx=10, ry=10) -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="
+            M370,190
+            A10,10 0 0 1 380,200
+            L380,312
+            A10,10 0 0 1 370,322
+            A10,10 0 0 1 360,312
+            L360,200
+            A10,10 0 0 1 370,190
+            Z"/>
+
+    <!-- Rect 11 (x=398, y=226, w=20, h=60, rx=10, ry=10) -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="
+            M408,226
+            A10,10 0 0 1 418,236
+            L418,276
+            A10,10 0 0 1 408,286
+            A10,10 0 0 1 398,276
+            L398,236
+            A10,10 0 0 1 408,226
+            Z"/>
+
+    <!-- Rect 12 (x=436, y=236, w=20, h=40, rx=10, ry=10) -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="
+            M446,236
+            A10,10 0 0 1 456,246
+            L456,266
+            A10,10 0 0 1 446,276
+            A10,10 0 0 1 436,266
+            L436,246
+            A10,10 0 0 1 446,236
+            Z"/>
+
+    <!-- Rect 13 (Circle: x=474, y=246, w=20, h=20, rx=10, ry=10) -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M484,246 A10,10 0 1,1 484,266 A10,10 0 1,1 484,246 Z"/>
+
+</vector>
