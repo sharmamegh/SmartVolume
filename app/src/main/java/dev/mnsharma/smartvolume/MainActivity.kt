@@ -227,12 +227,26 @@ fun calculateDecibels(buffer: ShortArray): Double {
 
 /** Determines a suggested volume percentage based on the decibel level. */
 fun determineVolumeLevel(decibels: Double): Int {
-    return when {
-        decibels < 40 -> 30
-        decibels < 60 -> 50
-        decibels < 80 -> 70
-        else -> 90
-    }
+    // Define the expected ambient noise range (in dB)
+    // Here, -40 dB represents very quiet, while -30 dB represents loud conditions.
+    val dBMin = -40.0
+    val dBMax = -30.0
+
+    // Define the corresponding volume range (in percent)
+    val minVolume = 20
+    val maxVolume = 100
+
+    // Normalize the measured dB value to a 0-1 scale.
+    // For example, if decibels == -40, then normalized value is 0.
+    // If decibels == -30, then normalized value is 1.
+    val normalized = (decibels - dBMin) / (dBMax - dBMin)
+
+    // Scale the normalized value to the desired volume range.
+    // For a normalized value of 0, we get minVolume; for 1, we get maxVolume.
+    val volume = normalized * (maxVolume - minVolume) + minVolume
+
+    // Clamp the volume value to ensure it lies between minVolume and maxVolume.
+    return volume.coerceIn(minVolume.toDouble(), maxVolume.toDouble()).toInt()
 }
 
 /** Sets the device volume based on the given percentage. */
