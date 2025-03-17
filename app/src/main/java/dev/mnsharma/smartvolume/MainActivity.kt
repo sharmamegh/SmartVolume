@@ -42,140 +42,82 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlin.math.log10
 import kotlin.math.sqrt
+import androidx.core.content.edit
 
-class MainActivity : ComponentActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContent {
-            SmartVolumeApp(this)
-        }
+// Persistent logging helper functions
+private const val PREFS_NAME = "SmartVolumePrefs"
+private const val KEY_AMBIENT_LOGS = "ambient_noise_logs"
+
+fun loadAmbientNoiseLogs(context: Context): MutableList<Double> {
+    val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+    val logsString = prefs.getString(KEY_AMBIENT_LOGS, "") ?: ""
+    return if (logsString.isEmpty()) {
+        mutableListOf()
+    } else {
+        logsString.split(",").mapNotNull { it.toDoubleOrNull() }.toMutableList()
     }
 }
 
-@Composable
-fun SmartVolumeApp(context: Context) {
-    val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
-    var noiseLevel by remember { mutableDoubleStateOf(0.0) }
-    var suggestedVolume by remember { mutableIntStateOf(50) }
-    var userVolume by remember { mutableIntStateOf(50) }
-    var recordingDuration by remember { mutableIntStateOf(10) } // default: 10 seconds
-    var isAnalyzing by remember { mutableStateOf(false) }
+fun saveAmbientNoiseLogs(context: Context, logs: List<Double>) {
+    val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+    val logsString = logs.joinToString(separator = ",")
+    prefs.edit { putString(KEY_AMBIENT_LOGS, logsString) }
+}
 
-    val coroutineScope = rememberCoroutineScope()
+/**
+ * Determines a suggested volume percentage based on the decibel level.
+ * It uses persistent logs (stored in SharedPreferences) to dynamically calibrate
+ * the ambient noise range. If fewer than 10 logs are available, default thresholds
+ * are used.
+ */
+fun determineVolumeLevel(context: Context, decibels: Double): Int {
+    // Load stored logs from persistent storage.
+    val ambientNoiseLogs = loadAmbientNoiseLogs(context)
 
-    // Permission launcher to request RECORD_AUDIO permission
-    val requestPermissionLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.RequestPermission()
-    ) { isGranted ->
-        if (isGranted) {
-            coroutineScope.launch {
-                isAnalyzing = true
-                try {
-                    val decibels = analyzeNoise(context, recordingDuration)
-                    noiseLevel = decibels
-                    suggestedVolume = determineVolumeLevel(decibels)
-                    userVolume = suggestedVolume
-                } catch (e: SecurityException) {
-                    Toast.makeText(context, "Permission error: ${e.message}", Toast.LENGTH_SHORT).show()
-                } finally {
-                    isAnalyzing = false
-                }
-            }
-        } else {
-            Toast.makeText(context, "Permission denied!", Toast.LENGTH_SHORT).show()
-        }
+    // Log the current measurement for dynamic calibration.
+    ambientNoiseLogs.add(decibels)
+    saveAmbientNoiseLogs(context, ambientNoiseLogs)
+
+    // Default thresholds if there are not enough logs yet.
+    val defaultDMin = -40.0
+    val defaultDMax = -20.0
+
+    // Use dynamic thresholds if at least 10 measurements exist; otherwise use defaults.
+    val dBMin = if (ambientNoiseLogs.size >= 10) ambientNoiseLogs.minOrNull() ?: defaultDMin else defaultDMin
+    val dBMax = if (ambientNoiseLogs.size >= 10) ambientNoiseLogs.maxOrNull() ?: defaultDMax else defaultDMax
+
+    // Volume range: minimum volume is 20% and maximum is 100%.
+    val minVolume = 20
+    val maxVolume = 100
+
+    // Prevent division by zero if the range is zero.
+    val effectiveDBMax = if (dBMax == dBMin) dBMin + 1 else dBMax
+
+    // Normalize the decibel value to a 0-1 scale based on the dynamic thresholds.
+    val normalized = (decibels - dBMin) / (effectiveDBMax - dBMin)
+
+    // Map the normalized value to the volume range [minVolume, maxVolume].
+    val volume = normalized * (maxVolume - minVolume) + minVolume
+
+    // Clamp the volume to ensure it's between minVolume and maxVolume.
+    return volume.coerceIn(minVolume.toDouble(), maxVolume.toDouble()).toInt()
+}
+
+/** Computes decibels from the recorded audio samples. */
+fun calculateDecibels(buffer: ShortArray): Double {
+    var sum = 0.0
+    for (sample in buffer) {
+        sum += sample * sample
     }
+    val rms = sqrt(sum / buffer.size)
+    return 20 * log10(rms / Short.MAX_VALUE.toDouble())
+}
 
-    Scaffold { innerPadding ->
-        Column(
-            modifier = Modifier
-                .padding(innerPadding)
-                .padding(16.dp)
-                .fillMaxWidth(),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text(
-                text = "Ambient Noise: ${"%.1f".format(noiseLevel)} dB",
-                style = MaterialTheme.typography.headlineLarge
-            )
-            Text("Suggested Volume: $suggestedVolume%")
-
-            // Show progress bar during analysis
-            if (isAnalyzing) {
-                LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
-            }
-
-            // Slider for user to adjust volume
-            Slider(
-                value = userVolume.toFloat(),
-                onValueChange = { userVolume = it.toInt() },
-                valueRange = 0f..100f,
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            // Slider for selecting recording duration (in seconds)
-            Text("Recording Duration: $recordingDuration seconds")
-            Slider(
-                value = recordingDuration.toFloat(),
-                onValueChange = { recordingDuration = it.toInt() },
-                valueRange = 1f..30f,
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            Button(
-                onClick = {
-                    // Check for permission; if granted, analyze noise; else, request permission
-                    if (ActivityCompat.checkSelfPermission(
-                            context,
-                            Manifest.permission.RECORD_AUDIO
-                        ) == PackageManager.PERMISSION_GRANTED
-                    ) {
-                        coroutineScope.launch {
-                            isAnalyzing = true
-                            try {
-                                val decibels = analyzeNoise(context, recordingDuration)
-                                noiseLevel = decibels
-                                suggestedVolume = determineVolumeLevel(decibels)
-                                userVolume = suggestedVolume
-                            } catch (e: SecurityException) {
-                                Toast.makeText(context, "Permission error: ${e.message}", Toast.LENGTH_SHORT).show()
-                            } finally {
-                                isAnalyzing = false
-                            }
-                        }
-                    } else {
-                        requestPermissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
-                    }
-                },
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text("Analyze Noise")
-            }
-
-            Button(
-                onClick = {
-                    setDeviceVolume(audioManager, userVolume)
-                    Toast.makeText(context, "Volume set to $userVolume%", Toast.LENGTH_SHORT).show()
-                },
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text("Confirm Volume")
-            }
-
-            // Reset button to allow re-analysis or clear previous results
-            Button(
-                onClick = {
-                    noiseLevel = 0.0
-                    suggestedVolume = 50
-                    userVolume = 50
-                },
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text("Reset")
-            }
-        }
-    }
+/** Sets the device volume based on the given percentage. */
+fun setDeviceVolume(audioManager: AudioManager, volumePercent: Int) {
+    val maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
+    val newVolume = (volumePercent / 100.0 * maxVolume).toInt()
+    audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, newVolume, 0)
 }
 
 /**
@@ -215,45 +157,140 @@ suspend fun analyzeNoise(context: Context, durationInSeconds: Int): Double = wit
     calculateDecibels(samples.toShortArray())
 }
 
-/** Computes decibels from the recorded audio samples. */
-fun calculateDecibels(buffer: ShortArray): Double {
-    var sum = 0.0
-    for (sample in buffer) {
-        sum += sample * sample
+class MainActivity : ComponentActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContent {
+            SmartVolumeApp(this)
+        }
     }
-    val rms = sqrt(sum / buffer.size)
-    return 20 * log10(rms / Short.MAX_VALUE.toDouble())
 }
 
-/** Determines a suggested volume percentage based on the decibel level. */
-fun determineVolumeLevel(decibels: Double): Int {
-    // Define the expected ambient noise range (in dB)
-    // Here, -40 dB represents very quiet, while -30 dB represents loud conditions.
-    val dBMin = -40.0
-    val dBMax = -30.0
+@Composable
+fun SmartVolumeApp(context: Context) {
+    val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+    var noiseLevel by remember { mutableDoubleStateOf(0.0) }
+    var suggestedVolume by remember { mutableIntStateOf(50) }
+    var userVolume by remember { mutableIntStateOf(50) }
+    var recordingDuration by remember { mutableIntStateOf(10) } // default: 10 seconds
+    var isAnalyzing by remember { mutableStateOf(false) }
 
-    // Define the corresponding volume range (in percent)
-    val minVolume = 20
-    val maxVolume = 100
+    val coroutineScope = rememberCoroutineScope()
 
-    // Normalize the measured dB value to a 0-1 scale.
-    // For example, if decibels == -40, then normalized value is 0.
-    // If decibels == -30, then normalized value is 1.
-    val normalized = (decibels - dBMin) / (dBMax - dBMin)
+    // Permission launcher to request RECORD_AUDIO permission
+    val requestPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            coroutineScope.launch {
+                isAnalyzing = true
+                try {
+                    val decibels = analyzeNoise(context, recordingDuration)
+                    noiseLevel = decibels
+                    // Use the persistent logs version for dynamic calibration.
+                    suggestedVolume = determineVolumeLevel(context, decibels)
+                    userVolume = suggestedVolume
+                } catch (e: SecurityException) {
+                    Toast.makeText(context, "Permission error: ${e.message}", Toast.LENGTH_SHORT).show()
+                } finally {
+                    isAnalyzing = false
+                }
+            }
+        } else {
+            Toast.makeText(context, "Permission denied!", Toast.LENGTH_SHORT).show()
+        }
+    }
 
-    // Scale the normalized value to the desired volume range.
-    // For a normalized value of 0, we get minVolume; for 1, we get maxVolume.
-    val volume = normalized * (maxVolume - minVolume) + minVolume
+    Scaffold { innerPadding ->
+        Column(
+            modifier = Modifier
+                .padding(innerPadding)
+                .padding(16.dp)
+                .fillMaxWidth(),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                text = "Ambient Noise: ${"%.1f".format(noiseLevel)} dB",
+                style = MaterialTheme.typography.headlineLarge
+            )
+            Text("Suggested Volume: $suggestedVolume%")
 
-    // Clamp the volume value to ensure it lies between minVolume and maxVolume.
-    return volume.coerceIn(minVolume.toDouble(), maxVolume.toDouble()).toInt()
-}
+            // Show progress bar during analysis.
+            if (isAnalyzing) {
+                LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+            }
 
-/** Sets the device volume based on the given percentage. */
-fun setDeviceVolume(audioManager: AudioManager, volumePercent: Int) {
-    val maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
-    val newVolume = (volumePercent / 100.0 * maxVolume).toInt()
-    audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, newVolume, 0)
+            // Slider for user to adjust volume.
+            Slider(
+                value = userVolume.toFloat(),
+                onValueChange = { userVolume = it.toInt() },
+                valueRange = 0f..100f,
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            // Slider for selecting recording duration (in seconds).
+            Text("Recording Duration: $recordingDuration seconds")
+            Slider(
+                value = recordingDuration.toFloat(),
+                onValueChange = { recordingDuration = it.toInt() },
+                valueRange = 1f..30f,
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Button(
+                onClick = {
+                    // Check for permission; if granted, analyze noise; else, request permission.
+                    if (ActivityCompat.checkSelfPermission(
+                            context,
+                            Manifest.permission.RECORD_AUDIO
+                        ) == PackageManager.PERMISSION_GRANTED
+                    ) {
+                        coroutineScope.launch {
+                            isAnalyzing = true
+                            try {
+                                val decibels = analyzeNoise(context, recordingDuration)
+                                noiseLevel = decibels
+                                suggestedVolume = determineVolumeLevel(context, decibels)
+                                userVolume = suggestedVolume
+                            } catch (e: SecurityException) {
+                                Toast.makeText(context, "Permission error: ${e.message}", Toast.LENGTH_SHORT).show()
+                            } finally {
+                                isAnalyzing = false
+                            }
+                        }
+                    } else {
+                        requestPermissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
+                    }
+                },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Analyze Noise")
+            }
+
+            Button(
+                onClick = {
+                    setDeviceVolume(audioManager, userVolume)
+                    Toast.makeText(context, "Volume set to $userVolume%", Toast.LENGTH_SHORT).show()
+                },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Confirm Volume")
+            }
+
+            // Reset button to allow re-analysis or clear previous results.
+            Button(
+                onClick = {
+                    noiseLevel = 0.0
+                    suggestedVolume = 50
+                    userVolume = 50
+                },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Reset")
+            }
+        }
+    }
 }
 
 @Preview(showBackground = true)
