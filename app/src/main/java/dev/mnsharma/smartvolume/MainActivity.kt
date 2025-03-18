@@ -38,8 +38,6 @@ import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.darkColorScheme
-import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableDoubleStateOf
@@ -60,23 +58,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.app.ActivityCompat
 import androidx.core.content.edit
+import dev.mnsharma.smartvolume.ui.theme.SmartVolumeTheme
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlin.math.log10
 import kotlin.math.sqrt
-
-// -------------------- Color Schemes --------------------
-private val DarkColorScheme = darkColorScheme(
-    primary = Color(0xFFFFD700), // bright yellow for controls in dark mode
-    background = Color.Black,
-    onBackground = Color.White
-)
-private val LightColorScheme = lightColorScheme(
-    primary = Color(0xFF6200EE), // default purple
-    background = Color.White,
-    onBackground = Color.Black
-)
 
 // -------------------- SharedPreferences Helpers --------------------
 private const val PREFS_NAME = "SmartVolumePrefs"
@@ -169,7 +156,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            MyAppTheme {
+            SmartVolumeTheme {
                 SmartVolumeApp(this)
             }
         }
@@ -208,17 +195,6 @@ fun AppFooter() {
             )
         }
     }
-}
-
-// -------------------- App Theme --------------------
-@Composable
-fun MyAppTheme(content: @Composable () -> Unit) {
-    val darkTheme = isSystemInDarkTheme()
-    val colorScheme = if (darkTheme) DarkColorScheme else LightColorScheme
-    MaterialTheme(
-        colorScheme = colorScheme,
-        content = content
-    )
 }
 
 // -------------------- UI (Jetpack Compose) --------------------
@@ -387,7 +363,7 @@ fun SmartVolumeApp(context: Context) {
 @Preview(showBackground = true)
 @Composable
 fun SmartVolumeAppPreview() {
-    MyAppTheme {
+    SmartVolumeTheme {
         SmartVolumeApp(LocalContext.current)
     }
 }
