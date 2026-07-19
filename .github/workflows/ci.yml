@@ -60,7 +60,7 @@ jobs:
       - run: xcodebuild -workspace "${{ matrix.workspace }}" -scheme "${{ matrix.scheme }}" -destination "${{ matrix.destination }}" CODE_SIGNING_ALLOWED=NO build
         working-directory: ${{ matrix.directory }}
   windows:
-    runs-on: windows-latest
+    runs-on: windows-2022
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4

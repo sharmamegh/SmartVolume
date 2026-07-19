@@ -128,6 +128,9 @@ importers:
       '@react-native/babel-preset':
         specifier: 0.81.6
         version: 0.81.6(@babel/core@7.29.7(supports-color@8.1.1))(supports-color@8.1.1)
+      '@react-native/codegen':
+        specifier: 0.81.6
+        version: 0.81.6(@babel/core@7.29.7(supports-color@8.1.1))
       '@react-native/gradle-plugin':
         specifier: 0.81.6
         version: 0.81.6

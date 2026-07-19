@@ -130,16 +130,16 @@ RCT_REMAP_METHOD(apply,
 @implementation SmartVolumeStorage
 RCT_EXPORT_MODULE()
 + (BOOL)requiresMainQueueSetup { return NO; }
-RCT_REMAP_METHOD(get, key:(NSString *)key resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject) {
+RCT_REMAP_METHOD(get, getValue:(NSString *)key resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject) {
   resolve([[NSUserDefaults standardUserDefaults] stringForKey:key]);
 }
 RCT_REMAP_METHOD(set,
-                 key:(NSString *)key value:(NSString *)value
+                 setValue:(NSString *)key value:(NSString *)value
                  resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject) {
   [[NSUserDefaults standardUserDefaults] setObject:value forKey:key];
   resolve(nil);
 }
-RCT_REMAP_METHOD(remove, key:(NSString *)key resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject) {
+RCT_REMAP_METHOD(remove, removeValue:(NSString *)key resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject) {
   [[NSUserDefaults standardUserDefaults] removeObjectForKey:key];
   resolve(nil);
 }
