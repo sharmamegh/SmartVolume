@@ -16,7 +16,7 @@ const rnwPath = fs.realpathSync(
  */
 
 const config = {
-  watchFolders: [path.resolve(__dirname, '../../packages')],
+  watchFolders: [path.resolve(__dirname, '../..')],
   resolver: {
     extraNodeModules: {
       'react-native': path.resolve(
