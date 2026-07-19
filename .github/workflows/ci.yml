@@ -1,0 +1,71 @@
+name: CI
+on:
+  push:
+  pull_request:
+jobs:
+  shared-and-web:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: pnpm }
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm verify
+      - run: pnpm exec playwright install --with-deps chromium
+      - run: pnpm test:e2e
+  native-dsp:
+    strategy:
+      matrix: { os: [ubuntu-latest, macos-latest, windows-latest] }
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - run: cmake -S packages/audio-engine/cpp -B packages/audio-engine/cpp/build
+      - run: cmake --build packages/audio-engine/cpp/build --config Release
+      - run: ctest --test-dir packages/audio-engine/cpp/build -C Release --output-on-failure
+  android:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: pnpm }
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: 17 }
+      - run: pnpm install --frozen-lockfile
+      - run: keytool -genkeypair -v -keystore apps/mobile/android/app/debug.keystore -storepass android -alias androiddebugkey -keypass android -dname "CN=Android Debug,O=Android,C=US" -keyalg RSA -keysize 2048 -validity 10000
+      - run: ./gradlew assembleDebug
+        working-directory: apps/mobile/android
+  apple:
+    runs-on: macos-latest
+    strategy:
+      matrix:
+        include:
+          - directory: apps/mobile/ios
+            workspace: SmartVolume.xcworkspace
+            scheme: SmartVolume
+            destination: generic/platform=iOS Simulator
+          - directory: apps/macos/macos
+            workspace: SmartVolume.xcworkspace
+            scheme: SmartVolume-macOS
+            destination: platform=macOS
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: pnpm }
+      - run: pnpm install --frozen-lockfile
+      - run: pod install
+        working-directory: ${{ matrix.directory }}
+      - run: xcodebuild -workspace "${{ matrix.workspace }}" -scheme "${{ matrix.scheme }}" -destination "${{ matrix.destination }}" CODE_SIGNING_ALLOWED=NO build
+        working-directory: ${{ matrix.directory }}
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: pnpm }
+      - run: pnpm install --frozen-lockfile
+      - shell: pwsh
+        run: msbuild apps/windows/windows/SmartVolume.sln /restore /p:Configuration=Release /p:Platform=x64

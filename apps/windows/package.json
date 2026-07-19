@@ -1,0 +1,30 @@
+{
+  "name": "@smartvolume/windows",
+  "private": true,
+  "version": "2.0.0",
+  "scripts": {
+    "start": "react-native start",
+    "windows": "npx @react-native-community/cli run-windows"
+  },
+  "dependencies": {
+    "@smartvolume/app": "workspace:*",
+    "react": "19.1.4",
+    "react-native": "0.81.6",
+    "react-native-windows": "0.81.27"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.25.2",
+    "@react-native-community/cli": "20.0.0",
+    "@react-native/metro-config": "0.81.6"
+  },
+  "engines": {
+    "node": ">=22.14"
+  },
+  "react-native-windows": {
+    "init-windows": {
+      "name": "SmartVolume",
+      "namespace": "SmartVolume",
+      "template": "cpp-app"
+    }
+  }
+}

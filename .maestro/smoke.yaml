@@ -1,0 +1,9 @@
+appId: dev.mnsharma.smartvolume
+---
+- launchApp:
+    clearState: true
+- assertVisible: "Sound guidance without recording you"
+- tapOn: "Continue"
+- assertVisible: "Analyze for 5 seconds"
+- tapOn: "Privacy"
+- assertVisible: "Raw audio is not stored, logged, uploaded, or passed to the interface."

@@ -1,0 +1,31 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "useDefineForClassFields": true,
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "allowJs": false,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "jsx": "react-jsx",
+    "baseUrl": ".",
+    "paths": {
+      "react-native": ["node_modules/react-native-web"],
+      "@smartvolume/app/*": ["packages/app/src/*"],
+      "@smartvolume/domain/*": ["packages/domain/src/*"],
+      "@smartvolume/audio/*": ["packages/audio-engine/src/*"],
+      "@smartvolume/platform/*": ["packages/platform/src/*"],
+      "@smartvolume/storage/*": ["packages/storage/src/*"],
+      "@smartvolume/ui/*": ["packages/ui/src/*"]
+    }
+  },
+  "include": ["apps/**/*.ts", "apps/**/*.tsx", "packages/**/*.ts", "packages/**/*.tsx", "vitest.config.ts"],
+  "exclude": ["node_modules", "dist", "packages/audio-engine/cpp", "packages/audio-engine/native", "packages/platform/native", "**/*.native.ts"]
+}
