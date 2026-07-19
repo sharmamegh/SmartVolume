@@ -37,8 +37,9 @@ jobs:
       - run: ./gradlew assembleDebug
         working-directory: apps/mobile/android
   apple:
-    runs-on: macos-latest
+    runs-on: macos-15
     strategy:
+      fail-fast: false
       matrix:
         include:
           - directory: apps/mobile/ios
@@ -69,6 +70,6 @@ jobs:
       - uses: actions/setup-node@v4
         with: { node-version: 22, cache: pnpm }
       - uses: microsoft/setup-msbuild@v2
-      - run: pnpm install --frozen-lockfile
+      - run: pnpm install --frozen-lockfile --config.node-linker=hoisted
       - shell: pwsh
         run: msbuild apps/windows/windows/SmartVolume.sln /restore /p:Configuration=Release /p:Platform=x64
