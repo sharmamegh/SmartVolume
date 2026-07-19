@@ -23,6 +23,12 @@ const config = {
         require.resolve('react-native/package.json'),
         '..',
       ),
+      '@smartvolume/app': path.resolve(__dirname, '../../packages/app/src'),
+      '@smartvolume/audio': path.resolve(__dirname, '../../packages/audio-engine/src'),
+      '@smartvolume/domain': path.resolve(__dirname, '../../packages/domain/src'),
+      '@smartvolume/platform': path.resolve(__dirname, '../../packages/platform/src'),
+      '@smartvolume/storage': path.resolve(__dirname, '../../packages/storage/src'),
+      '@smartvolume/ui': path.resolve(__dirname, '../../packages/ui/src'),
     },
     blockList: [
       // This stops "npx @react-native-community/cli run-windows" from causing the metro server to crash if its already running
