@@ -38,7 +38,7 @@ final class SmartVolumeAudioEngine: NSObject {
                     self.pendingReject = reject
                     input.installTap(onBus: 0, bufferSize: 4096, format: format) { buffer, _ in
                         guard let samples = buffer.floatChannelData?[0] else { return }
-                        meter.process(samples, count: Int(buffer.frameLength))
+                        meter.process(samples, count: UInt(buffer.frameLength))
                     }
                     do {
                         try session.setCategory(.record, mode: .measurement, options: [])

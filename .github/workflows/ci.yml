@@ -72,4 +72,6 @@ jobs:
       - uses: microsoft/setup-msbuild@v2
       - run: pnpm install --frozen-lockfile --config.node-linker=hoisted
       - shell: pwsh
+        run: node -e "const fs=require('fs'),path=require('path');const target=path.dirname(require.resolve('react-native/package.json'));const link='apps/windows/node_modules/react-native';fs.mkdirSync(path.dirname(link),{recursive:true});if(!fs.existsSync(link))fs.symlinkSync(target,link,'junction')"
+      - shell: pwsh
         run: msbuild apps/windows/windows/SmartVolume.sln /restore /p:Configuration=Release /p:Platform=x64
