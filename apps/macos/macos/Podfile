@@ -10,7 +10,6 @@ prepare_react_native_project!
 
 target 'SmartVolume-macOS' do
   platform :macos, '14.0'
-  use_native_modules!
   pod 'SmartVolumeNativeMacOS', :path => '../../..'
 
   # Flags change depending on the env values.
