@@ -79,6 +79,7 @@
       <DisableSpecificWarnings>4453;28204</DisableSpecificWarnings>
       <AdditionalIncludeDirectories>
         $(MSBuildThisFileDirectory);
+        $(MSBuildThisFileDirectory)..\..\..\..\packages\audio-engine\cpp\include;
         %(AdditionalIncludeDirectories)
       </AdditionalIncludeDirectories>
     </ClCompile>
