@@ -18,6 +18,12 @@ const rnwPath = fs.realpathSync(
 const config = {
   watchFolders: [path.resolve(__dirname, '../../packages')],
   resolver: {
+    extraNodeModules: {
+      'react-native': path.resolve(
+        require.resolve('react-native/package.json'),
+        '..',
+      ),
+    },
     blockList: [
       // This stops "npx @react-native-community/cli run-windows" from causing the metro server to crash if its already running
       new RegExp(

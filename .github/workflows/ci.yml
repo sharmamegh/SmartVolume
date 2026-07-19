@@ -54,6 +54,8 @@ jobs:
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with: { node-version: 22, cache: pnpm }
+      - uses: maxim-lobanov/setup-xcode@v1
+        with: { xcode-version: '16.4' }
       - run: pnpm install --frozen-lockfile
       - run: pod install
         working-directory: ${{ matrix.directory }}
