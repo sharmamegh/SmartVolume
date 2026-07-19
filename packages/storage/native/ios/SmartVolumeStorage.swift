@@ -6,14 +6,14 @@ final class SmartVolumeStorage: NSObject {
     @objc static func requiresMainQueueSetup() -> Bool { false }
 
     @objc(get:resolver:rejecter:)
-    func get(key: String, resolve: RCTPromiseResolveBlock, reject: RCTPromiseRejectBlock) {
+    func get(key: String, resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
         queue.async {
             do { resolve(try self.read()[key]) }
             catch { reject("E_STORAGE", error.localizedDescription, error) }
         }
     }
     @objc(set:value:resolver:rejecter:)
-    func set(key: String, value: String, resolve: RCTPromiseResolveBlock, reject: RCTPromiseRejectBlock) {
+    func set(key: String, value: String, resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
         queue.async {
             do {
                 var values = try self.read()
@@ -24,7 +24,7 @@ final class SmartVolumeStorage: NSObject {
         }
     }
     @objc(remove:resolver:rejecter:)
-    func remove(key: String, resolve: RCTPromiseResolveBlock, reject: RCTPromiseRejectBlock) {
+    func remove(key: String, resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
         queue.async {
             do {
                 var values = try self.read()
